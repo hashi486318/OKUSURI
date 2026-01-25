@@ -13,10 +13,10 @@
   }
 
   header {
-    padding: 16px;
+    padding: 30px;
     background: #ffffff;
     text-align: center;
-    font-size: 20px;
+    font-size: 50px;
     font-weight: bold;
     border-bottom: 1px solid #ddd;
   }
@@ -29,10 +29,11 @@
 
   nav button {
     flex: 1;
-    padding: 12px;
-    font-size: 16px;
+    padding: 24px;
+    font-size: 36px;
     border: none;
     background: none;
+    font-weight: bold;
   }
 
   nav button.active {
@@ -41,17 +42,17 @@
   }
 
   main {
-    padding: 16px;
+    padding: 30px;
   }
 
   .medicine {
     display: flex;
     align-items: center;
-    padding: 14px;
-    margin-bottom: 10px;
+    padding: 24px;
+    margin-bottom: 20px;
     background: #ffffff;
     border-radius: 8px;
-    font-size: 18px;
+    font-size: 35px;
   }
 
   .medicine.taken {
@@ -77,7 +78,8 @@
 <body>
 
 <header>
-  💊 おくすり管理<br>
+  💊 おくすり管理
+  &ensp;&ensp;
   <small id="date"></small>
 </header>
 
@@ -93,7 +95,8 @@
 const medicines = [
   { name: "血圧の薬", timing: "morning", order: 1, taken: false },
   { name: "ビタミン", timing: "morning", order: 2, taken: false },
-  { name: "抗生物質", timing: "night", order: 1, taken: false }
+  { name: "抗生物質", timing: "night", order: 1, taken: false },
+  { name: "細胞", timing: "night", order: 2, taken: false }
 ];
 
 /* ===== 日付処理 ===== */
