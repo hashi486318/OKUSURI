@@ -1,7 +1,5 @@
 self.addEventListener("install", () => {
-  // 今は何もしない
+  console.log("Service Worker installed");
 });
 
-self.addEventListener("activate", () => {
-  // 今は何もしない
-});
+self.addEventListener("fetch", () => {});
