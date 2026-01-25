@@ -225,6 +225,11 @@ function save() {
 /* ===== 初期表示（時間で自動） ===== */
 const hour = new Date().getHours();
 showPage(hour < 15 ? "morning" : "night");
+
+const MESSAGE = "💊 おくすりの時間ですよ〜〜";
+schedule(8, 15, MESSAGE);   // 朝
+schedule(19, 0, MESSAGE); // 夜
+
 </script>
 
 </body>
