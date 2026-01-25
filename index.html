@@ -125,6 +125,15 @@ if ("Notification" in window) {
   });
 }
 
+function notify(body) {
+  if (navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({
+      type: "notify",
+      body
+    });
+  }
+}
+
 /* ===== データ ===== */
 const medicines = [
   { name: "血圧の薬", timing: "morning", order: 1, taken: false },
