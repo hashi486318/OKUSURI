@@ -134,6 +134,23 @@ function notify(body) {
   }
 }
 
+function schedule(hour, minute, body) {
+  const now = new Date();
+  const target = new Date();
+  target.setHours(hour, minute, 0, 0);
+
+  if (target <= now) {
+    target.setDate(target.getDate() + 1);
+  }
+
+  const delay = target - now;
+
+  setTimeout(() => {
+    notify(body);
+    // 次の日用にまた schedule してもOK
+  }, delay);
+}
+
 /* ===== データ ===== */
 const medicines = [
   { name: "血圧の薬", timing: "morning", order: 1, taken: false },
