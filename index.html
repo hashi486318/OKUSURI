@@ -111,6 +111,12 @@ if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("./sw.js");
 }
 
+if ("Notification" in window) {
+  Notification.requestPermission().then(result => {
+    console.log("通知許可:", result);
+  });
+}
+
 /* ===== データ ===== */
 const medicines = [
   { name: "血圧の薬", timing: "morning", order: 1, taken: false },
