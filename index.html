@@ -16,7 +16,7 @@
     padding: 30px;
     background: #ffffff;
     text-align: center;
-    font-size: 50px;
+    font-size: 60px;
     font-weight: bold;
     border-bottom: 1px solid #ddd;
   }
@@ -30,14 +30,14 @@
   nav button {
     flex: 1;
     padding: 24px;
-    font-size: 36px;
+    font-size: 42px;
     border: none;
     background: none;
     font-weight: bold;
   }
 
   nav button.active {
-    background: #e0e0e0;
+    background: #d0d0d0;
     font-weight: bold;
   }
 
@@ -45,7 +45,12 @@
     padding: 30px;
   }
   
-  h3 {
+  #date {
+    font-size: 50px;
+    margin: 16px;
+  }
+  
+  h2 {
     text-align: center;
     font-size: 24px;
   }
@@ -53,11 +58,12 @@
   .medicine {
     display: flex;
     align-items: center;
-    padding: 24px;
+    padding: 32px;
     margin-bottom: 20px;
     background: #ffffff;
     border-radius: 8px;
-    font-size: 35px;
+    font-size: 42px;
+    cursor: pointer;
   }
 
   .medicine.taken {
@@ -65,8 +71,8 @@
   }
 
   .check {
-    width: 28px;
-    height: 28px;
+    width: 40px;
+    height: 40px;
     margin-right: 12px;
     border-radius: 50%;
     border: 2px solid #666;
@@ -84,8 +90,7 @@
 
 <header>
   💊 おくすり管理
-  &ensp;&ensp;
-  <small id="date"></small>
+  <div id="date"></div>
 </header>
 
 <nav>
@@ -95,9 +100,9 @@
 
 <main id="list"></main>
 
-<h3>
-  このページは毎日更新されます。
-</h3>
+<h2>
+  服薬状況は毎日リセットされるので安心してください。
+</h2>
 
 <script>
 /* ===== データ ===== */
