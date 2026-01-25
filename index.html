@@ -105,6 +105,11 @@
 </h2>
 
 <script>
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./sw.js");
+}
+
 /* ===== データ ===== */
 const medicines = [
   { name: "血圧の薬", timing: "morning", order: 1, taken: false },
