@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>おくすり管理</title>
+
+<style>
+  body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    background: #f5f5f5;
+  }
+
+  header {
+    padding: 16px;
+    background: #ffffff;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    border-bottom: 1px solid #ddd;
+  }
+
+  nav {
+    display: flex;
+    background: #ffffff;
+    border-bottom: 1px solid #ddd;
+  }
+
+  nav button {
+    flex: 1;
+    padding: 12px;
+    font-size: 16px;
+    border: none;
+    background: none;
+  }
+
+  nav button.active {
+    background: #e0e0e0;
+    font-weight: bold;
+  }
+
+  main {
+    padding: 16px;
+  }
+
+  .medicine {
+    display: flex;
+    align-items: center;
+    padding: 14px;
+    margin-bottom: 10px;
+    background: #ffffff;
+    border-radius: 8px;
+    font-size: 18px;
+  }
+
+  .medicine.taken {
+    opacity: 0.5;
+  }
+
+  .check {
+    width: 28px;
+    height: 28px;
+    margin-right: 12px;
+    border-radius: 50%;
+    border: 2px solid #666;
+    background: #fff;
+  }
+
+  .medicine.taken .check {
+    background: #4caf50;
+    border-color: #4caf50;
+  }
+</style>
+</head>
+
+<body>
+
+<header>
+  💊 おくすり管理<br>
+  <small id="date"></small>
+</header>
+
+<nav>
+  <button id="btn-morning" onclick="showPage('morning')">朝</button>
+  <button id="btn-night" onclick="showPage('night')">夜</button>
+</nav>
+
+<main id="list"></main>
+
+<script>
+/* ===== データ ===== */
+const medicines = [
+  { name: "血圧の薬", timing: "morning", order: 1, taken: false },
+  { name: "ビタミン", timing: "morning", order: 2, taken: false },
+  { name: "抗生物質", timing: "night", order: 1, taken: false }
+];
+
+/* ===== 日付処理 ===== */
+function today() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+}
+
+document.getElementById("date").textContent = today();
+
+/* ===== 毎日リセット ===== */
+const lastDate = localStorage.getItem("lastDate");
+if (lastDate !== today()) {
+  medicines.forEach(m => m.taken = false);
+  localStorage.setItem("lastDate", today());
+}
+
+const saved = localStorage.getItem("medicines");
+if (saved) {
+  const data = JSON.parse(saved);
+  medicines.forEach(m => {
+    const s = data.find(x => x.name === m.name);
+    if (s) m.taken = s.taken;
+  });
+}
+
+/* ===== 表示 ===== */
+let current = "morning";
+
+function showPage(timing) {
+  current = timing;
+
+  document.getElementById("btn-morning").classList.toggle("active", timing === "morning");
+  document.getElementById("btn-night").classList.toggle("active", timing === "night");
+
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+
+  medicines
+    .filter(m => m.timing === timing)
+    .sort((a, b) => a.order - b.order)
+    .forEach(m => {
+      const div = document.createElement("div");
+      div.className = "medicine" + (m.taken ? " taken" : "");
+
+      div.innerHTML = `
+        <div class="check"></div>
+        <div>${m.name}</div>
+      `;
+
+      div.onclick = () => {
+        m.taken = !m.taken;
+        save();
+        showPage(current);
+      };
+
+      list.appendChild(div);
+    });
+}
+
+/* ===== 保存 ===== */
+function save() {
+  localStorage.setItem("medicines", JSON.stringify(medicines));
+}
+
+/* ===== 初期表示（時間で自動） ===== */
+const hour = new Date().getHours();
+showPage(hour < 15 ? "morning" : "night");
+</script>
+
+</body>
+</html>
