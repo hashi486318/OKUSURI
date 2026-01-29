@@ -167,13 +167,7 @@ function today() {
 
 document.getElementById("date").textContent = today();
 
-/* ===== 毎日リセット ===== */
-const lastDate = localStorage.getItem("lastDate");
-if (lastDate !== today()) {
-  medicines.forEach(m => m.taken = false);
-  localStorage.setItem("lastDate", today());
-}
-
+/* ===== 保存データ読み込み ===== */
 const saved = localStorage.getItem("medicines");
 if (saved) {
   const data = JSON.parse(saved);
@@ -181,6 +175,14 @@ if (saved) {
     const s = data.find(x => x.name === m.name);
     if (s) m.taken = s.taken;
   });
+}
+
+/* ===== 毎日リセット ===== */
+const lastDate = localStorage.getItem("lastDate");
+if (lastDate !== today()) {
+  medicines.forEach(m => m.taken = false);
+  localStorage.setItem("lastDate", today());
+  save(); // ← ここ重要
 }
 
 /* ===== 表示 ===== */
