@@ -203,6 +203,22 @@ function showPage(timing) {
     });  
 }  
   
+function dailyReset() {
+  const lastDate = localStorage.getItem("lastDate");
+  if (lastDate !== today()) {
+    medicines.forEach(m => m.taken = false);
+    localStorage.setItem("lastDate", today());
+    save();
+  }
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) {
+    dailyReset();
+    showPage(current);
+  }
+});
+
 /* ===== 保存 ===== */  
 function save() {  
   localStorage.setItem("medicines", JSON.stringify(medicines));  
