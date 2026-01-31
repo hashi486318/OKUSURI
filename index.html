@@ -8,92 +8,97 @@
 <title>おくすり管理</title>
 
 <style>
-  body {
-    margin: 0;
-    font-family: system-ui, sans-serif;
-    background: #f5f5f5;
-  }
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: #f5f5f5;
+}
 
-  header {
-    padding: 30px;
-    background: #ffffff;
-    text-align: center;
-    font-size: 54px;
-    font-weight: bold;
-    border-bottom: 1px solid #ddd;
-  }
+header {
+  padding: 24px;
+  background: #ffffff;
+  text-align: center;
+  font-size: 40px;
+  font-weight: bold;
+  border-bottom: 1px solid #ddd;
+}
 
-  nav {
-    display: flex;
-    background: #ffffff;
-    border-bottom: 1px solid #ddd;
-  }
+#date, #streak {
+  font-size: 22px;
+  margin-top: 8px;
+}
 
-  nav button {
-    flex: 1;
-    padding: 24px;
-    font-size: 42px;
-    border: none;
-    background: none;
-    font-weight: bold;
-    color: #2196F3;
-  }
+nav {
+  display: flex;
+  background: #ffffff;
+  border-bottom: 1px solid #ddd;
+}
 
-  nav button.active {
-    background: #d0d0d0;
-    font-weight: bold;
-  }
+nav button {
+  flex: 1;
+  padding: 18px;
+  font-size: 28px;
+  border: none;
+  background: none;
+  font-weight: bold;
+  color: #2196F3;
+}
 
-  main {
-    padding: 30px;
-  }
-  
-  #date {
-    font-size: 50px;
-    margin: 16px;
-  }
-  
-  h2 {
-    text-align: center;
-    font-size: 24px;
-  }
+nav button.active {
+  background: #e0e0e0;
+}
 
-  .medicine {
-    display: flex;
-    align-items: center;
-    padding: 32px;
-    margin-bottom: 20px;
-    background: #ffffff;
-    border-radius: 8px;
-    font-size: 42px;
-    cursor: pointer;
-  }
+main {
+  padding: 20px;
+}
 
-  .medicine.taken {
-    opacity: 0.5;
-  }
+.medicine {
+  display: flex;
+  align-items: center;
+  padding: 24px;
+  margin-bottom: 16px;
+  background: #ffffff;
+  border-radius: 8px;
+  font-size: 28px;
+  cursor: pointer;
+}
 
-  .check {
-    width: 40px;
-    height: 40px;
-    margin-right: 12px;
-    border-radius: 50%;
-    border: 2px solid #666;
-    background: #fff;
-  }
+.medicine.taken {
+  opacity: 0.5;
+}
 
-  .medicine.taken .check {
-    background: #4caf50;
-    border-color: #4caf50;
-  }
+.check {
+  width: 28px;
+  height: 28px;
+  margin-right: 16px;
+  border-radius: 50%;
+  border: 2px solid #666;
+}
+
+.medicine.taken .check {
+  background: #4caf50;
+  border-color: #4caf50;
+}
+
+#add {
+  margin-top: 20px;
+  text-align: center;
+}
+
+#add input, #add select, #add button {
+  font-size: 18px;
+  padding: 8px;
+  margin: 4px;
+}
 </style>
 </head>
 
 <body>
 
 <header>
-  💊 おくすり<br>管理
+  💊 おくすり管理
   <div id="date"></div>
+  <div id="streak"></div>
 </header>
 
 <nav>
@@ -103,63 +108,17 @@
 
 <main id="list"></main>
 
-<h2>
-  服薬状況は毎日リセットされるので安心してください。
-</h2>
+<div id="add">
+  <input id="newName" placeholder="薬の名前">
+  <select id="newTiming">
+    <option value="morning">朝</option>
+    <option value="night">夜</option>
+  </select>
+  <button onclick="addMedicine()">追加</button>
+</div>
 
 <script>
-
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./sw.js")
-    .then(reg => {
-      console.log("SW registered:", reg.scope);
-    })
-    .catch(err => {
-      console.error("SW failed:", err);
-    });
-}
-
-if ("Notification" in window) {
-  Notification.requestPermission().then(result => {
-    console.log("通知許可:", result);
-  });
-}
-
-function notify(body) {
-  if (navigator.serviceWorker.controller) {
-    navigator.serviceWorker.controller.postMessage({
-      type: "notify",
-      body
-    });
-  }
-}
-
-function schedule(hour, minute, body) {
-  const now = new Date();
-  const target = new Date();
-  target.setHours(hour, minute, 0, 0);
-
-  if (target <= now) {
-    target.setDate(target.getDate() + 1);
-  }
-
-  const delay = target - now;
-
-  setTimeout(() => {
-    notify(body);
-    // 次の日用にまた schedule してもOK
-  }, delay);
-}
-
-/* ===== データ ===== */
-const medicines = [
-  { name: "血圧の薬", timing: "morning", order: 1, taken: false },
-  { name: "ビタミン", timing: "morning", order: 2, taken: false },
-  { name: "抗生物質", timing: "night", order: 1, taken: false },
-  { name: "細胞", timing: "night", order: 2, taken: false }
-];
-
-/* ===== 日付処理 ===== */
+/* ===== 基本 ===== */
 function today() {
   const d = new Date();
   return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
@@ -167,22 +126,42 @@ function today() {
 
 document.getElementById("date").textContent = today();
 
-/* ===== 保存データ読み込み ===== */
-const saved = localStorage.getItem("medicines");
-if (saved) {
-  const data = JSON.parse(saved);
-  medicines.forEach(m => {
-    const s = data.find(x => x.name === m.name);
-    if (s) m.taken = s.taken;
-  });
+/* ===== データ ===== */
+let medicines = JSON.parse(localStorage.getItem("medicines")) ?? [
+  { name: "血圧の薬", timing: "morning", order: 1, taken: false },
+  { name: "ビタミン", timing: "morning", order: 2, taken: false },
+  { name: "抗生物質", timing: "night", order: 1, taken: false }
+];
+
+let history = JSON.parse(localStorage.getItem("history")) ?? [];
+
+/* ===== 保存 ===== */
+function save() {
+  localStorage.setItem("medicines", JSON.stringify(medicines));
+  localStorage.setItem("history", JSON.stringify(history));
 }
 
-/* ===== 毎日リセット ===== */
-const lastDate = localStorage.getItem("lastDate");
-if (lastDate !== today()) {
-  medicines.forEach(m => m.taken = false);
-  localStorage.setItem("lastDate", today());
-  save(); // ← ここ重要
+/* ===== 日次リセット ===== */
+function dailyReset() {
+  const lastDate = localStorage.getItem("lastDate");
+  if (lastDate !== today()) {
+    const allTaken = medicines.every(m => m.taken);
+    history.push(allTaken);
+    medicines.forEach(m => m.taken = false);
+    localStorage.setItem("lastDate", today());
+    save();
+  }
+}
+
+/* ===== 連続記録 ===== */
+function calcStreak() {
+  let count = 0;
+  for (let i = history.length - 1; i >= 0; i--) {
+    if (history[i]) count++;
+    else break;
+  }
+  document.getElementById("streak").textContent =
+    count > 0 ? `🔥 ${count}日連続服薬中` : "⏸ 連続記録なし";
 }
 
 /* ===== 表示 ===== */
@@ -190,7 +169,6 @@ let current = "morning";
 
 function showPage(timing) {
   current = timing;
-
   document.getElementById("btn-morning").classList.toggle("active", timing === "morning");
   document.getElementById("btn-night").classList.toggle("active", timing === "night");
 
@@ -199,39 +177,75 @@ function showPage(timing) {
 
   medicines
     .filter(m => m.timing === timing)
-    .sort((a, b) => a.order - b.order)
     .forEach(m => {
       const div = document.createElement("div");
       div.className = "medicine" + (m.taken ? " taken" : "");
-
-      div.innerHTML = `
-        <div class="check"></div>
-        <div>${m.name}</div>
-      `;
-
+      div.innerHTML = `<div class="check"></div><div>${m.name}</div>`;
       div.onclick = () => {
         m.taken = !m.taken;
         save();
         showPage(current);
       };
-
       list.appendChild(div);
     });
+
+  calcStreak();
 }
 
-/* ===== 保存 ===== */
-function save() {
-  localStorage.setItem("medicines", JSON.stringify(medicines));
+/* ===== 薬追加 ===== */
+function addMedicine() {
+  const name = document.getElementById("newName").value.trim();
+  const timing = document.getElementById("newTiming").value;
+  if (!name) return;
+
+  medicines.push({ name, timing, order: Date.now(), taken: false });
+  document.getElementById("newName").value = "";
+  save();
+  showPage(current);
 }
 
-/* ===== 初期表示（時間で自動） ===== */
-const hour = new Date().getHours();
-showPage(hour < 15 ? "morning" : "night");
+/* ===== 画面復帰時チェック ===== */
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) {
+    dailyReset();
+    showPage(current);
+  }
+});
 
-const MESSAGE = "💊 おくすりの時間ですよ〜〜";
-schedule(8, 15, MESSAGE);   // 朝
-schedule(19, 0, MESSAGE); // 夜
+/* ===== 0時リセット ===== */
+(function scheduleMidnight() {
+  const now = new Date();
+  const next = new Date();
+  next.setHours(24, 0, 0, 0);
+  setTimeout(() => {
+    dailyReset();
+    showPage(current);
+    scheduleMidnight();
+  }, next - now);
+})();
 
+/* ===== 初期表示 ===== */
+dailyReset();
+showPage(new Date().getHours() < 15 ? "morning" : "night");
+
+/* ===== 飲み忘れ警告 ===== */
+if ("serviceWorker" in navigator && "Notification" in window) {
+  navigator.serviceWorker.register("./sw.js");
+  Notification.requestPermission();
+}
+
+function notify(body) {
+  if (navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({ type: "notify", body });
+  }
+}
+
+setTimeout(() => {
+  const nightUntaken = medicines.some(m => m.timing === "night" && !m.taken);
+  if (nightUntaken) {
+    notify("⚠ 夜のお薬がまだ飲まれていません");
+  }
+}, 20 * 60 * 60 * 1000); // 20時
 </script>
 
 </body>
