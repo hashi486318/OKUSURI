@@ -1,215 +1,296 @@
-<!DOCTYPE html>  <html lang="ja">  
-<head>  
-<meta charset="UTF-8" />  
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />  
-<link rel="manifest" href="./manifest.json">  
-<link rel="icon" type="image/png" href="./favicon.png">  
-<title>おくすり管理</title>  <style>  
-  body {  
-    margin: 0;  
-    font-family: system-ui, sans-serif;  
-    background: #f5f5f5;  
-  }  
-  
-  header {  
-    padding: 30px;  
-    background: #ffffff;  
-    text-align: center;  
-    font-size: 54px;  
-    font-weight: bold;  
-    border-bottom: 1px solid #ddd;  
-  }  
-  
-  nav {  
-    display: flex;  
-    background: #ffffff;  
-    border-bottom: 1px solid #ddd;  
-  }  
-  
-  nav button {  
-    flex: 1;  
-    padding: 24px;  
-    font-size: 42px;  
-    border: none;  
-    background: none;  
-    font-weight: bold;  
-    color: #2196F3;  
-  }  
-  
-  nav button.active {  
-    background: #d0d0d0;  
-    font-weight: bold;  
-  }  
-  
-  main {  
-    padding: 30px;  
-  }  
-  
-  #date {  
-    font-size: 50px;  
-    margin: 16px;  
-  }  
-  
-  h2 {  
-    text-align: center;  
-    font-size: 24px;  
-  }  
-  
-  .medicine {  
-    display: flex;  
-    align-items: center;  
-    padding: 32px;  
-    margin-bottom: 20px;  
-    background: #ffffff;  
-    border-radius: 8px;  
-    font-size: 42px;  
-    cursor: pointer;  
-  }  
-  
-  .medicine.taken {  
-    opacity: 0.5;  
-  }  
-  
-  .check {  
-    width: 40px;  
-    height: 40px;  
-    margin-right: 12px;  
-    border-radius: 50%;  
-    border: 2px solid #666;  
-    background: #fff;  
-  }  
-  
-  .medicine.taken .check {  
-    background: #4caf50;  
-    border-color: #4caf50;  
-  }  
-</style>  </head>  <body>  <header>  
-  💊 おくすり<br>管理  
-  <div id="date"></div>  
-</header>  <nav>  
-  <button id="btn-morning" onclick="showPage('morning')">朝</button>  
-  <button id="btn-night" onclick="showPage('night')">夜</button>  
-</nav>  <main id="list"></main>  <h2>  
-  服薬状況は毎日リセットされるので安心してください。  
-</h2>  <script>  
-  
-if ("serviceWorker" in navigator) {  
-  navigator.serviceWorker.register("./sw.js")  
-    .then(reg => {  
-      console.log("SW registered:", reg.scope);  
-    })  
-    .catch(err => {  
-      console.error("SW failed:", err);  
-    });  
-}  
-  
-if ("Notification" in window) {  
-  Notification.requestPermission().then(result => {  
-    console.log("通知許可:", result);  
-  });  
-}  
-  
-function notify(body) {  
-  if (navigator.serviceWorker.controller) {  
-    navigator.serviceWorker.controller.postMessage({  
-      type: "notify",  
-      body  
-    });  
-  }  
-}  
-  
-function schedule(hour, minute, body) {  
-  const now = new Date();  
-  const target = new Date();  
-  target.setHours(hour, minute, 0, 0);  
-  
-  if (target <= now) {  
-    target.setDate(target.getDate() + 1);  
-  }  
-  
-  const delay = target - now;  
-  
-  setTimeout(() => {  
-    notify(body);  
-    // 次の日用にまた schedule してもOK  
-  }, delay);  
-}  
-  
-/* ===== データ ===== */  
-const medicines = [  
-  { name: "血圧の薬", timing: "morning", order: 1, taken: false },  
-  { name: "ビタミン", timing: "morning", order: 2, taken: false },  
-  { name: "抗生物質", timing: "night", order: 1, taken: false },  
-  { name: "細胞", timing: "night", order: 2, taken: false }  
-];  
-  
-/* ===== 日付処理 ===== */  
-function today() {  
-  const d = new Date();  
-  return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;  
-}  
-  
-document.getElementById("date").textContent = today();  
-  
-/* ===== 保存データ読み込み ===== */  
-const saved = localStorage.getItem("medicines");  
-if (saved) {  
-  const data = JSON.parse(saved);  
-  medicines.forEach(m => {  
-    const s = data.find(x => x.name === m.name);  
-    if (s) m.taken = s.taken;  
-  });  
-}  
-  
-/* ===== 毎日リセット ===== */  
-const lastDate = localStorage.getItem("lastDate");  
-if (lastDate !== today()) {  
-  medicines.forEach(m => m.taken = false);  
-  localStorage.setItem("lastDate", today());  
-  save(); // ← ここ重要  
-}  
-  
-/* ===== 表示 ===== */  
-let current = "morning";  
-  
-function showPage(timing) {  
-  current = timing;  
-  
-  document.getElementById("btn-morning").classList.toggle("active", timing === "morning");  
-  document.getElementById("btn-night").classList.toggle("active", timing === "night");  
-  
-  const list = document.getElementById("list");  
-  list.innerHTML = "";  
-  
-  medicines  
-    .filter(m => m.timing === timing)  
-    .sort((a, b) => a.order - b.order)  
-    .forEach(m => {  
-      const div = document.createElement("div");  
-      div.className = "medicine" + (m.taken ? " taken" : "");  
-  
-      div.innerHTML = `  
-        <div class="check"></div>  
-        <div>${m.name}</div>  
-      `;  
-  
-      div.onclick = () => {  
-        m.taken = !m.taken;  
-        save();  
-        showPage(current);  
-      };  
-  
-      list.appendChild(div);  
-    });  
-}  
-  
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/png" href="./favicon.png">
+<title>おくすり管理</title>
+
+<style>
+  body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    background: #f5f5f5;
+  }
+
+  header {
+    padding: 30px;
+    background: #ffffff;
+    text-align: center;
+    font-size: 54px;
+    font-weight: bold;
+    border-bottom: 1px solid #ddd;
+  }
+
+  nav {
+    display: flex;
+    background: #ffffff;
+    border-bottom: 1px solid #ddd;
+  }
+
+  nav button {
+    flex: 1;
+    padding: 24px;
+    font-size: 42px;
+    border: none;
+    background: none;
+    font-weight: bold;
+    color: #2196F3;
+  }
+
+  nav button.active {
+    background: #d0d0d0;
+  }
+
+  main {
+    padding: 30px;
+  }
+
+  #date {
+    font-size: 50px;
+    margin: 16px;
+  }
+
+  h2 {
+    text-align: center;
+    font-size: 24px;
+  }
+
+  .medicine {
+    display: flex;
+    align-items: center;
+    padding: 32px;
+    margin-bottom: 20px;
+    background: #ffffff;
+    border-radius: 8px;
+    font-size: 42px;
+    cursor: pointer;
+  }
+
+  .medicine.taken {
+    opacity: 0.5;
+  }
+
+  .check {
+    width: 40px;
+    height: 40px;
+    margin-right: 12px;
+    border-radius: 50%;
+    border: 2px solid #666;
+    background: #fff;
+  }
+
+  .medicine.taken .check {
+    background: #4caf50;
+    border-color: #4caf50;
+  }
+</style>
+</head>
+
+<body>
+
+<header>
+  💊 おくすり<br>管理
+  <div id="date"></div>
+</header>
+
+<nav>
+  <button id="btn-morning" onclick="showPage('morning')">朝</button>
+  <button id="btn-night" onclick="showPage('night')">夜</button>
+</nav>
+
+<main id="list"></main>
+
+<h2>
+  服薬状況は毎日リセットされるので安心してください。
+</h2>
+
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./sw.js")
+    .then(reg => {
+      console.log("SW registered:", reg.scope);
+    })
+    .catch(err => {
+      console.error("SW failed:", err);
+    });
+}
+
+if ("Notification" in window) {
+  Notification.requestPermission().then(result => {
+    console.log("通知許可:", result);
+  });
+}
+
+/* ===== 音声 ===== */
+function speak(text) {
+  if (!("speechSynthesis" in window)) return;
+
+  speechSynthesis.cancel();
+
+  const msg = new SpeechSynthesisUtterance(text);
+  msg.lang = "ja-JP";
+  msg.rate = 0.9;
+  msg.pitch = 1.0;
+  msg.volume = 1.0;
+
+  speechSynthesis.speak(msg);
+}
+
+/* ===== 通知 ===== */
+function notify(body) {
+  speak(body);
+
+  if (navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({
+      type: "notify",
+      body
+    });
+  }
+}
+
+/* ===== データ ===== */
+const medicines = [
+  { name: "血圧の薬", timing: "morning", order: 1, taken: false },
+  { name: "ビタミン", timing: "morning", order: 2, taken: false },
+  { name: "抗生物質", timing: "night", order: 1, taken: false },
+  { name: "細胞", timing: "night", order: 2, taken: false }
+];
+
+/* ===== 音声通知内容 ===== */
+function notifyMedicine(timing) {
+  const list = medicines
+    .filter(m => m.timing === timing && !m.taken)
+    .sort((a, b) => a.order - b.order);
+
+  if (list.length === 0) return;
+
+  const names = list.map(m => m.name).join("、");
+
+  const message =
+    timing === "morning"
+      ? `朝のおくすりの時間です。${names}を飲んでください。`
+      : `夜のおくすりの時間です。${names}を飲んでください。`;
+
+  notify(message);
+  repeatReminder(timing);
+}
+
+/* ===== 再通知 ===== */
+function repeatReminder(timing) {
+  let count = 0;
+
+  const intervalId = setInterval(() => {
+    const remaining = medicines.some(
+      m => m.timing === timing && !m.taken
+    );
+
+    if (!remaining || count >= 3) {
+      clearInterval(intervalId);
+      return;
+    }
+
+    const names = medicines
+      .filter(m => m.timing === timing && !m.taken)
+      .map(m => m.name)
+      .join("、");
+
+    notify(`${names}をまだ飲んでいません。おくすりを飲んでください。`);
+    count++;
+  }, 5 * 60 * 1000);
+}
+
+/* ===== スケジュール ===== */
+function schedule(hour, minute, timing) {
+  const now = new Date();
+  const target = new Date();
+
+  target.setHours(hour, minute, 0, 0);
+
+  if (target <= now) {
+    target.setDate(target.getDate() + 1);
+  }
+
+  const delay = target - now;
+
+  setTimeout(() => {
+    notifyMedicine(timing);
+    schedule(hour, minute, timing);
+  }, delay);
+}
+
+/* ===== 日付 ===== */
+function today() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+}
+
+document.getElementById("date").textContent = today();
+
+/* ===== 保存読み込み ===== */
+const saved = localStorage.getItem("medicines");
+if (saved) {
+  const data = JSON.parse(saved);
+  medicines.forEach(m => {
+    const s = data.find(x => x.name === m.name);
+    if (s) m.taken = s.taken;
+  });
+}
+
+/* ===== 毎日リセット ===== */
+function save() {
+  localStorage.setItem("medicines", JSON.stringify(medicines));
+}
+
 function dailyReset() {
   const lastDate = localStorage.getItem("lastDate");
+
   if (lastDate !== today()) {
     medicines.forEach(m => m.taken = false);
     localStorage.setItem("lastDate", today());
     save();
   }
+}
+
+dailyReset();
+
+/* ===== 表示 ===== */
+let current = "morning";
+
+function showPage(timing) {
+  current = timing;
+
+  document.getElementById("btn-morning")
+    .classList.toggle("active", timing === "morning");
+
+  document.getElementById("btn-night")
+    .classList.toggle("active", timing === "night");
+
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+
+  medicines
+    .filter(m => m.timing === timing)
+    .sort((a, b) => a.order - b.order)
+    .forEach(m => {
+      const div = document.createElement("div");
+      div.className = "medicine" + (m.taken ? " taken" : "");
+
+      div.innerHTML = `
+        <div class="check"></div>
+        <div>${m.name}</div>
+      `;
+
+      div.onclick = () => {
+        m.taken = !m.taken;
+        save();
+        speak("飲みました");
+        showPage(current);
+      };
+
+      list.appendChild(div);
+    });
 }
 
 document.addEventListener("visibilitychange", () => {
@@ -219,18 +300,14 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-/* ===== 保存 ===== */  
-function save() {  
-  localStorage.setItem("medicines", JSON.stringify(medicines));  
-}  
-  
-/* ===== 初期表示（時間で自動） ===== */  
-const hour = new Date().getHours();  
-showPage(hour < 15 ? "morning" : "night");  
-  
-const MESSAGE = "💊 おくすりの時間ですよ〜〜";  
-schedule(8, 15, MESSAGE);   // 朝  
-schedule(19, 0, MESSAGE); // 夜  
-  
-</script>  </body>  
+/* ===== 初期表示 ===== */
+const hour = new Date().getHours();
+showPage(hour < 15 ? "morning" : "night");
+
+/* ===== 通知時刻 ===== */
+schedule(8, 15, "morning");
+schedule(19, 0, "night");
+</script>
+
+</body>
 </html>
