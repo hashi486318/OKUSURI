@@ -214,6 +214,9 @@ function schedule(hour, minute, timing) {
 
   const delay = target - now;
 
+  console.log("通知予定:", target);
+  console.log("あと", delay / 1000, "秒");
+
   setTimeout(() => {
     notifyMedicine(timing);
     schedule(hour, minute, timing);
