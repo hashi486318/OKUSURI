@@ -72,14 +72,21 @@
     opacity: 0.5;
   }
 
+　.medicine {
+  transition: background-color 1.2s ease,
+              color 1.2s ease,
+              opacity 0.4s ease;
+}
   .check {
-    width: 40px;
-    height: 40px;
-    margin-right: 12px;
-    border-radius: 50%;
-    border: 2px solid #666;
-    background: #fff;
-  }
+  width: 40px;
+  height: 40px;
+  margin-right: 12px;
+  border-radius: 50%;
+  border: 2px solid #666;
+  background: #fff;
+  transition: background-color 1.2s ease,
+              border-color 1.2s ease;
+}
 
   .medicine.taken .check {
     background: #4caf50;
@@ -340,15 +347,17 @@ dailyReset();
 /* ===== 表示 ===== */
 let current = "morning";
 
-function showPage(timing) {
+function showPage(timing, animate = true) {
   current = timing;
 
-applyTheme(timing);
-
-document.body.classList.toggle(
-  "night-theme",
-  timing === "night"
-);
+  if (animate) {
+    applyTheme(timing);
+  } else {
+    document.body.classList.toggle(
+      "night-theme",
+      timing === "night"
+    );
+  }
 
   document.getElementById("btn-morning")
     .classList.toggle("active", timing === "morning");
@@ -372,17 +381,17 @@ document.body.classList.toggle(
       `;
 
       div.onclick = () => {
-  m.taken = !m.taken;
-  save();
+        m.taken = !m.taken;
+        save();
 
-  if (m.taken) {
-    speak("飲みました");
-  } else {
-    speak("取り消しました");
-  }
+        if (m.taken) {
+          speak(`${m.name}を飲みました`);
+        } else {
+          speak(`${m.name}のチェックを外しました`);
+        }
 
-  showPage(current);
-};
+        showPage(current, false);
+      };
 
       list.appendChild(div);
     });
