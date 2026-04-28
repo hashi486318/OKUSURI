@@ -294,11 +294,17 @@ function showPage(timing) {
       `;
 
       div.onclick = () => {
-        m.taken = !m.taken;
-        save();
-        speak("飲みました");
-        showPage(current);
-      };
+  m.taken = !m.taken;
+  save();
+
+  if (m.taken) {
+    speak("飲みました");
+  } else {
+    speak("取り消しました");
+  }
+
+  showPage(current);
+};
 
       list.appendChild(div);
     });
