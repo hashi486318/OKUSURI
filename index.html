@@ -85,6 +85,44 @@
     background: #4caf50;
     border-color: #4caf50;
   }
+
+  body.night-theme {
+  background: #121212;
+  color: #ffffff;
+}
+
+body.night-theme header,
+body.night-theme nav,
+body.night-theme .medicine {
+  background: #1e1e1e;
+  color: #ffffff;
+}
+
+body.night-theme nav {
+  border-bottom: 1px solid #444;
+}
+
+body.night-theme header {
+  border-bottom: 1px solid #444;
+}
+
+body.night-theme .medicine {
+  border: 1px solid #333;
+}
+
+body.night-theme .check {
+  border-color: #bbb;
+  background: #222;
+}
+
+body.night-theme nav button {
+  color: #90caf9;
+}
+
+body.night-theme nav button.active {
+  background: #333;
+}
+
 </style>
 </head>
 
@@ -271,6 +309,11 @@ let current = "morning";
 
 function showPage(timing) {
   current = timing;
+
+document.body.classList.toggle(
+  "night-theme",
+  timing === "night"
+);
 
   document.getElementById("btn-morning")
     .classList.toggle("active", timing === "morning");
