@@ -15,3 +15,26 @@ self.addEventListener("message", (event) => {
     });
   }
 });
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+
+  event.waitUntil(
+    clients.matchAll({
+      type: "window",
+      includeUncontrolled: true
+    }).then((clientList) => {
+      // すでにアプリが開いてたら前面に出す
+      for (const client of clientList) {
+        if ("focus" in client) {
+          return client.focus();
+        }
+      }
+
+      // 開いてなければ新しく開く
+      if (clients.openWindow) {
+        return clients.openWindow("./");
+      }
+    })
+  );
+});
