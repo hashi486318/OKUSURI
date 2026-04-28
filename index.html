@@ -208,16 +208,24 @@ function schedule(hour, minute, timing) {
 
   target.setHours(hour, minute, 0, 0);
 
+  console.log("=== schedule start ===");
+  console.log("timing:", timing);
+  console.log("now:", now.toLocaleString());
+  console.log("target before check:", target.toLocaleString());
+
   if (target <= now) {
+    console.log("すでに時刻を過ぎているので翌日に回します");
     target.setDate(target.getDate() + 1);
   }
 
   const delay = target - now;
 
-  console.log("通知予定:", target);
-  console.log("あと", delay / 1000, "秒");
+  console.log("target final:", target.toLocaleString());
+  console.log("delay(ms):", delay);
+  console.log("delay(sec):", Math.floor(delay / 1000));
 
   setTimeout(() => {
+    console.log("通知発火:", timing, new Date().toLocaleString());
     notifyMedicine(timing);
     schedule(hour, minute, timing);
   }, delay);
