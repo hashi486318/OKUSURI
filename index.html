@@ -123,6 +123,20 @@ body.night-theme nav button.active {
   background: #333;
 }
 
+body {
+  transition: background-color 0.8s ease, color 0.8s ease;
+}
+
+body.lamp-fade {
+  background: #8a8a8a;
+}
+
+header,
+nav,
+.medicine {
+  transition: background-color 0.8s ease, color 0.8s ease;
+}
+
 </style>
 </head>
 
@@ -310,6 +324,8 @@ let current = "morning";
 function showPage(timing) {
   current = timing;
 
+applyTheme(timing);
+
 document.body.classList.toggle(
   "night-theme",
   timing === "night"
@@ -351,6 +367,19 @@ document.body.classList.toggle(
 
       list.appendChild(div);
     });
+}
+
+function applyTheme(timing) {
+  document.body.classList.add("lamp-fade");
+
+  setTimeout(() => {
+    document.body.classList.toggle(
+      "night-theme",
+      timing === "night"
+    );
+
+    document.body.classList.remove("lamp-fade");
+  }, 250);
 }
 
 document.addEventListener("visibilitychange", () => {
