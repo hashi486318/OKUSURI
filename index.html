@@ -12,6 +12,7 @@
     margin: 0;
     font-family: system-ui, sans-serif;
     background: #f5f5f5;
+    transition: background-color 0.8s ease, color 1.2s ease;
   }
 
   header {
@@ -21,12 +22,14 @@
     font-size: 54px;
     font-weight: bold;
     border-bottom: 1px solid #ddd;
+    transition: background-color 0.8s ease, color 0.8s ease;
   }
 
   nav {
     display: flex;
     background: #ffffff;
     border-bottom: 1px solid #ddd;
+    transition: background-color 0.8s ease, color 0.8s ease;
   }
 
   nav button {
@@ -66,103 +69,92 @@
     border-radius: 8px;
     font-size: 42px;
     cursor: pointer;
+    transition: background-color 0.8s ease,
+                color 0.8s ease,
+                opacity 0.4s ease;
   }
 
   .medicine.taken {
     opacity: 0.5;
   }
 
-　.medicine {
-  transition: background-color 1.2s ease,
-              color 1.2s ease,
-              opacity 0.4s ease;
-}
   .check {
-  width: 40px;
-  height: 40px;
-  margin-right: 12px;
-  border-radius: 50%;
-  border: 2px solid #666;
-  background: #fff;
-  transition: background-color 1.2s ease,
-              border-color 1.2s ease;
-}
+    width: 40px;
+    height: 40px;
+    margin-right: 12px;
+    border-radius: 50%;
+    border: 2px solid #666;
+    background: #fff;
+    transition: background-color 1.2s ease,
+                border-color 1.2s ease;
+  }
 
   .medicine.taken .check {
     background: #4caf50;
     border-color: #4caf50;
   }
 
+  /* ナイトテーマ */
   body.night-theme {
-  background: #121212;
-  color: #ffffff;
-}
+    background: #121212;
+    color: #ffffff;
+  }
 
-body.night-theme header,
-body.night-theme nav,
-body.night-theme .medicine {
-  background: #1e1e1e;
-  color: #ffffff;
-}
+  body.night-theme header,
+  body.night-theme nav,
+  body.night-theme .medicine {
+    background: #1e1e1e;
+    color: #ffffff;
+  }
 
-body.night-theme nav {
-  border-bottom: 1px solid #444;
-}
+  body.night-theme nav {
+    border-bottom: 1px solid #444;
+  }
 
-body.night-theme header {
-  border-bottom: 1px solid #444;
-}
+  body.night-theme header {
+    border-bottom: 1px solid #444;
+  }
 
-body.night-theme .medicine {
-  border: 1px solid #333;
-}
+  body.night-theme .medicine {
+    border: 1px solid #333;
+  }
 
-body.night-theme .check {
-  border-color: #bbb;
-  background: #222;
-}
+  body.night-theme .check {
+    border-color: #bbb;
+    background: #222;
+  }
 
-body.night-theme nav button {
-  color: #90caf9;
-}
+  body.night-theme nav button {
+    color: #90caf9;
+  }
 
-body.night-theme nav button.active {
-  background: #333;
-}
+  body.night-theme nav button.active {
+    background: #333;
+  }
 
-body {
-  transition: background-color 0.8s ease, color 1.2s ease;
-}
+  /* ランプフェード */
+  body.lamp-fade {
+    background: #8f8676;
+    color: #ffffff;
+  }
 
-body.lamp-fade {
-  background: #8f8676;
-  color: #ffffff;
-}
+  body.lamp-fade header,
+  body.lamp-fade nav,
+  body.lamp-fade .medicine {
+    background: #8f8676;
+    color: #ffffff;
+    border-color: #8f8676;
+  }
 
-body.lamp-fade header,
-body.lamp-fade nav,
-body.lamp-fade .medicine {
-  background: #8f8676;
-  color: #ffffff;
-  border-color: #8f8676;
-}
+  body.lamp-fade nav button {
+    background: #8f8676;
+    color: #ffffff;
+  }
 
-body.lamp-fade nav button {
-  background: #8f8676;
-  color: #ffffff;
-}
-
-body.lamp-fade .check {
-  background: #8f8676;
-  border-color: #ffffff;
-}
-
-header,
-nav,
-.medicine {
-  transition: background-color 0.8s ease, color 0.8s ease;
-}
-
+  body.lamp-fade .check {
+    background: #8f8676;
+    border-color: #ffffff;
+  }
 </style>
 </head>
 
@@ -231,9 +223,9 @@ function notify(body) {
 /* ===== データ ===== */
 const medicines = [
   { name: "血圧の薬", timing: "morning", order: 1, taken: false },
-  { name: "ビタミン", timing: "morning", order: 2, taken: false },
-  { name: "抗生物質", timing: "night", order: 1, taken: false },
-  { name: "細胞", timing: "night", order: 2, taken: false }
+  { name: "ビタミン",  timing: "morning", order: 2, taken: false },
+  { name: "抗生物質", timing: "night",   order: 1, taken: false },
+  { name: "細胞",     timing: "night",   order: 2, taken: false }
 ];
 
 /* ===== 音声通知内容 ===== */
@@ -245,7 +237,6 @@ function notifyMedicine(timing) {
   if (list.length === 0) return;
 
   const names = list.map(m => m.name).join("、");
-
   const message =
     timing === "morning"
       ? `朝のおくすりの時間です。${names}を飲んでください。`
@@ -286,24 +277,13 @@ function schedule(hour, minute, timing) {
 
   target.setHours(hour, minute, 0, 0);
 
-  console.log("=== schedule start ===");
-  console.log("timing:", timing);
-  console.log("now:", now.toLocaleString());
-  console.log("target before check:", target.toLocaleString());
-
   if (target <= now) {
-    console.log("すでに時刻を過ぎているので翌日に回します");
     target.setDate(target.getDate() + 1);
   }
 
   const delay = target - now;
 
-  console.log("target final:", target.toLocaleString());
-  console.log("delay(ms):", delay);
-  console.log("delay(sec):", Math.floor(delay / 1000));
-
   setTimeout(() => {
-    console.log("通知発火:", timing, new Date().toLocaleString());
     notifyMedicine(timing);
     schedule(hour, minute, timing);
   }, delay);
@@ -312,12 +292,12 @@ function schedule(hour, minute, timing) {
 /* ===== 日付 ===== */
 function today() {
   const d = new Date();
-  return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
 }
 
 document.getElementById("date").textContent = today();
 
-/* ===== 保存読み込み ===== */
+/* ===== 保存・読み込み ===== */
 const saved = localStorage.getItem("medicines");
 if (saved) {
   const data = JSON.parse(saved);
@@ -327,11 +307,11 @@ if (saved) {
   });
 }
 
-/* ===== 毎日リセット ===== */
 function save() {
   localStorage.setItem("medicines", JSON.stringify(medicines));
 }
 
+/* ===== 毎日リセット ===== */
 function dailyReset() {
   const lastDate = localStorage.getItem("lastDate");
 
@@ -353,17 +333,11 @@ function showPage(timing, animate = true) {
   if (animate) {
     applyTheme(timing);
   } else {
-    document.body.classList.toggle(
-      "night-theme",
-      timing === "night"
-    );
+    document.body.classList.toggle("night-theme", timing === "night");
   }
 
-  document.getElementById("btn-morning")
-    .classList.toggle("active", timing === "morning");
-
-  document.getElementById("btn-night")
-    .classList.toggle("active", timing === "night");
+  document.getElementById("btn-morning").classList.toggle("active", timing === "morning");
+  document.getElementById("btn-night").classList.toggle("active", timing === "night");
 
   const list = document.getElementById("list");
   list.innerHTML = "";
@@ -374,25 +348,16 @@ function showPage(timing, animate = true) {
     .forEach(m => {
       const div = document.createElement("div");
       div.className = "medicine" + (m.taken ? " taken" : "");
-
       div.innerHTML = `
         <div class="check"></div>
         <div>${m.name}</div>
       `;
-
       div.onclick = () => {
         m.taken = !m.taken;
         save();
-
-        if (m.taken) {
-          speak(`${m.name}を飲みました`);
-        } else {
-          speak(`${m.name}のチェックを外しました`);
-        }
-
+        speak(m.taken ? `${m.name}を飲みました` : `${m.name}のチェックを外しました`);
         showPage(current, false);
       };
-
       list.appendChild(div);
     });
 }
@@ -401,11 +366,7 @@ function applyTheme(timing) {
   document.body.classList.add("lamp-fade");
 
   setTimeout(() => {
-    document.body.classList.toggle(
-      "night-theme",
-      timing === "night"
-    );
-
+    document.body.classList.toggle("night-theme", timing === "night");
     document.body.classList.remove("lamp-fade");
   }, 250);
 }
@@ -424,7 +385,6 @@ showPage(hour < 15 ? "morning" : "night");
 /* ===== 通知時刻 ===== */
 schedule(8, 15, "morning");
 schedule(19, 0, "night");
-
 </script>
 
 </body>
