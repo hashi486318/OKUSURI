@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="ja">
 <head>
 <meta charset="UTF-8" />
@@ -40,6 +41,7 @@
     background: none;
     font-weight: bold;
     color: #2196F3;
+    transition: background-color 0.8s ease, color 0.8s ease;
   }
 
   nav button.active {
@@ -156,6 +158,7 @@
     border-color: #ffffff;
   }
 </style>
+
 </head>
 
 <body>
@@ -327,6 +330,40 @@ dailyReset();
 /* ===== 表示 ===== */
 let current = "morning";
 
+function buildList(timing) {
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+
+  medicines
+    .filter(m => m.timing === timing)
+    .sort((a, b) => a.order - b.order)
+    .forEach(m => {
+      const div = document.createElement("div");
+      div.className = "medicine" + (m.taken ? " taken" : "");
+      div.dataset.name = m.name;
+      div.innerHTML = `
+        <div class="check"></div>
+        <div>${m.name}</div>
+      `;
+      div.onclick = () => {
+        m.taken = !m.taken;
+        save();
+        speak(m.taken ? `${m.name}を飲みました` : `${m.name}のチェックを外しました`);
+        updateList(current);
+      };
+      list.appendChild(div);
+    });
+}
+
+function updateList(timing) {
+  medicines
+    .filter(m => m.timing === timing)
+    .forEach(m => {
+      const div = document.querySelector(`.medicine[data-name="${m.name}"]`);
+      if (div) div.classList.toggle("taken", m.taken);
+    });
+}
+
 function showPage(timing, animate = true) {
   if (timing === current && animate) return;
   current = timing;
@@ -340,27 +377,7 @@ function showPage(timing, animate = true) {
   document.getElementById("btn-morning").classList.toggle("active", timing === "morning");
   document.getElementById("btn-night").classList.toggle("active", timing === "night");
 
-  const list = document.getElementById("list");
-  list.innerHTML = "";
-
-  medicines
-    .filter(m => m.timing === timing)
-    .sort((a, b) => a.order - b.order)
-    .forEach(m => {
-      const div = document.createElement("div");
-      div.className = "medicine" + (m.taken ? " taken" : "");
-      div.innerHTML = `
-        <div class="check"></div>
-        <div>${m.name}</div>
-      `;
-      div.onclick = () => {
-        m.taken = !m.taken;
-        save();
-        speak(m.taken ? `${m.name}を飲みました` : `${m.name}のチェックを外しました`);
-        showPage(current, false);
-      };
-      list.appendChild(div);
-    });
+  buildList(timing);
 }
 
 function applyTheme(timing) {
@@ -375,13 +392,15 @@ function applyTheme(timing) {
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden) {
     dailyReset();
-    showPage(current);
+    showPage(current, false);
   }
 });
 
 /* ===== 初期表示 ===== */
 const hour = new Date().getHours();
-showPage(hour < 15 ? "morning" : "night");
+const initialTiming = hour < 15 ? "morning" : "night";
+current = initialTiming;
+showPage(initialTiming, false);
 
 /* ===== 通知時刻 ===== */
 schedule(8, 15, "morning");
