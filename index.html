@@ -328,6 +328,7 @@ dailyReset();
 let current = "morning";
 
 function showPage(timing, animate = true) {
+  if (timing === current && animate) return;
   current = timing;
 
   if (animate) {
