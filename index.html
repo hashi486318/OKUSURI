@@ -405,6 +405,32 @@ showPage(initialTiming, false);
 /* ===== 通知時刻 ===== */
 schedule(8, 15, "morning");
 schedule(19, 0, "night");
+
+/* ===== FCM購読 ===== */
+async function subscribeFCM() {
+  if (!("PushManager" in window)) return;
+
+  const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js");
+  const { getMessaging, getToken } = await import("https://www.gstatic.com/firebasejs/12.12.1/firebase-messaging.js");
+
+  const app = initializeApp({
+    apiKey: "AIzaSyBTx13Aefx1tnx2jQndjWdtJfw2bzx64bo",
+    projectId: "okusuri-76a62",
+    messagingSenderId: "1089175572283",
+    appId: "1:1089175572283:web:ccca081a1550d290f3311e",
+  });
+
+  const messaging = getMessaging(app);
+
+  const token = await getToken(messaging, {
+    vapidKey: "YOUR_VAPID_KEY", // ← 次のステップで取得
+    serviceWorkerRegistration: await navigator.serviceWorker.ready,
+  });
+
+  console.log("FCM token:", token);
+}
+
+subscribeFCM();
 </script>
 
 </body>
