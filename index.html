@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="ja">
 <head>
 <meta charset="UTF-8" />
@@ -158,7 +157,6 @@
     border-color: #ffffff;
   }
 </style>
-
 </head>
 
 <body>
@@ -182,18 +180,8 @@
 <script>
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("./sw.js")
-    .then(reg => {
-      console.log("SW registered:", reg.scope);
-    })
-    .catch(err => {
-      console.error("SW failed:", err);
-    });
-}
-
-if ("Notification" in window) {
-  Notification.requestPermission().then(result => {
-    console.log("通知許可:", result);
-  });
+    .then(reg => console.log("SW registered:", reg.scope))
+    .catch(err => console.error("SW failed:", err));
 }
 
 /* ===== 音声 ===== */
@@ -211,18 +199,6 @@ function speak(text) {
   speechSynthesis.speak(msg);
 }
 
-/* ===== 通知 ===== */
-function notify(body) {
-  speak(body);
-
-  if (navigator.serviceWorker.controller) {
-    navigator.serviceWorker.controller.postMessage({
-      type: "notify",
-      body
-    });
-  }
-}
-
 /* ===== データ ===== */
 const medicines = [
   { name: "血圧の薬", timing: "morning", order: 1, taken: false },
@@ -230,67 +206,6 @@ const medicines = [
   { name: "抗生物質", timing: "night",   order: 1, taken: false },
   { name: "細胞",     timing: "night",   order: 2, taken: false }
 ];
-
-/* ===== 音声通知内容 ===== */
-function notifyMedicine(timing) {
-  const list = medicines
-    .filter(m => m.timing === timing && !m.taken)
-    .sort((a, b) => a.order - b.order);
-
-  if (list.length === 0) return;
-
-  const names = list.map(m => m.name).join("、");
-  const message =
-    timing === "morning"
-      ? `朝のおくすりの時間です。${names}を飲んでください。`
-      : `夜のおくすりの時間です。${names}を飲んでください。`;
-
-  notify(message);
-  repeatReminder(timing);
-}
-
-/* ===== 再通知 ===== */
-function repeatReminder(timing) {
-  let count = 0;
-
-  const intervalId = setInterval(() => {
-    const remaining = medicines.some(
-      m => m.timing === timing && !m.taken
-    );
-
-    if (!remaining || count >= 3) {
-      clearInterval(intervalId);
-      return;
-    }
-
-    const names = medicines
-      .filter(m => m.timing === timing && !m.taken)
-      .map(m => m.name)
-      .join("、");
-
-    notify(`${names}をまだ飲んでいません。おくすりを飲んでください。`);
-    count++;
-  }, 5 * 60 * 1000);
-}
-
-/* ===== スケジュール ===== */
-function schedule(hour, minute, timing) {
-  const now = new Date();
-  const target = new Date();
-
-  target.setHours(hour, minute, 0, 0);
-
-  if (target <= now) {
-    target.setDate(target.getDate() + 1);
-  }
-
-  const delay = target - now;
-
-  setTimeout(() => {
-    notifyMedicine(timing);
-    schedule(hour, minute, timing);
-  }, delay);
-}
 
 /* ===== 日付 ===== */
 function today() {
@@ -401,40 +316,6 @@ const hour = new Date().getHours();
 const initialTiming = hour < 15 ? "morning" : "night";
 current = initialTiming;
 showPage(initialTiming, false);
-
-/* ===== 通知時刻 ===== */
-schedule(8, 15, "morning");
-schedule(19, 0, "night");
-
-/* ===== FCM購読 ===== */
-async function subscribeFCM() {
-  if (!("PushManager" in window)) return;
-
-  const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js");
-  const { getMessaging, getToken } = await import("https://www.gstatic.com/firebasejs/12.12.1/firebase-messaging.js");
-
-  const app = initializeApp({
-    apiKey: "AIzaSyBTx13Aefx1tnx2jQndjWdtJfw2bzx64bo",
-    projectId: "okusuri-76a62",
-    messagingSenderId: "1089175572283",
-    appId: "1:1089175572283:web:ccca081a1550d290f3311e",
-  });
-
-  const messaging = getMessaging(app);
-
-  const token = await getToken(messaging, {
-    vapidKey: "BFDThk2KxmcK_aTY4KutvN57Ru2ZU6bQtMfF2aIiVbVpXdDvt8Th0LqSPLSp9LBef_FKedxK7z9-d5XIk6rqOe4", // ← 次のステップで取得
-    serviceWorkerRegistration: await navigator.serviceWorker.ready,
-  });
-
-  console.log("FCM token:", token);
-  document.body.insertAdjacentHTML(
-  "beforeend",
-  `<p style="word-break:break-all;font-size:12px;padding:16px;">${token}</p>`
-  );
-}
-
-subscribeFCM();
 </script>
 
 </body>
