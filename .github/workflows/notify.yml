@@ -1,1 +1,73 @@
-a
+name: おくすり通知
+
+on:
+  schedule:
+    - cron: '15 23 * * *'  # 日本時間 8:15 (UTC 23:15)
+    - cron: '0 10 * * *'   # 日本時間 19:00 (UTC 10:00)
+  workflow_dispatch:
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install google-auth-library
+        run: npm install google-auth-library
+
+      - name: Send FCM notification
+        env:
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FCM_TOKEN: ${{ secrets.FCM_TOKEN }}
+        run: |
+          node -e "
+          const { GoogleAuth } = require('google-auth-library');
+          const https = require('https');
+
+          async function main() {
+            const credentials = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+            const auth = new GoogleAuth({
+              credentials,
+              scopes: ['https://www.googleapis.com/auth/firebase.messaging'],
+            });
+
+            const token = await auth.getAccessToken();
+            const projectId = process.env.FIREBASE_PROJECT_ID;
+            const fcmToken = process.env.FCM_TOKEN;
+
+            const hour = new Date().getUTCHours();
+            const timing = hour < 12 ? 'morning' : 'night';
+            const title = '💊 おくすりの時間ですよ〜〜';
+            const body = timing === 'morning'
+              ? '血圧の薬、ビタミンを飲んでください'
+              : '抗生物質、細胞を飲んでください';
+
+            const payload = JSON.stringify({
+              message: {
+                token: fcmToken,
+                notification: { title, body },
+              }
+            });
+
+            const options = {
+              hostname: 'fcm.googleapis.com',
+              path: '/v1/projects/' + projectId + '/messages:send',
+              method: 'POST',
+              headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json',
+              }
+            };
+
+            const req = https.request(options, res => {
+              let data = '';
+              res.on('data', chunk => data += chunk);
+              res.on('end', () => console.log('Response:', data));
+            });
+
+            req.write(payload);
+            req.end();
+          }
+
+          main().catch(console.error);
+          "
