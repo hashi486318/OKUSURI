@@ -428,6 +428,10 @@ async function subscribeFCM() {
   });
 
   console.log("FCM token:", token);
+  document.body.insertAdjacentHTML(
+  "beforeend",
+  `<p style="word-break:break-all;font-size:12px;padding:16px;">${token}</p>`
+  );
 }
 
 subscribeFCM();
