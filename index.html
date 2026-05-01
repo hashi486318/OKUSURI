@@ -187,7 +187,7 @@ function speak(text) {
   const msg = new SpeechSynthesisUtterance(text);
   msg.lang = "ja-JP";
   msg.rate = 0.9;
-  msg.pitch = 1.3;
+  msg.pitch = 1.1;
   msg.volume = 1.0;
 
   speechSynthesis.speak(msg);
@@ -200,6 +200,33 @@ const medicines = [
   { name: "抗生物質", timing: "night",   order: 1, taken: false },
   { name: "細胞",     timing: "night",   order: 2, taken: false }
 ];
+
+/* ===== 状況読み上げ ===== */
+function announceStatus() {
+  const timing = new Date().getHours() < 15 ? "morning" : "night";
+
+  const morningRemaining = medicines.filter(m => m.timing === "morning" && !m.taken);
+  const nightRemaining   = medicines.filter(m => m.timing === "night"   && !m.taken);
+  const allDone = morningRemaining.length === 0 && nightRemaining.length === 0;
+
+  if (timing === "morning") {
+    if (morningRemaining.length > 0) {
+      const names = morningRemaining.map(m => m.name).join("、");
+      speak(`おはよう！朝ごはんの後の${names}を忘れないでね。`);
+    } else {
+      speak("朝のおくすりは全部飲みましたよ！");
+    }
+  } else {
+    if (allDone) {
+      speak("今日のおくすりは全部飲みましたよ！");
+    } else if (nightRemaining.length > 0) {
+      const names = nightRemaining.map(m => m.name).join("、");
+      speak(`夜ごはんの後に${names}を飲むのを忘れないようにしてね！`);
+    } else {
+      speak("夜のおくすりは全部飲みましたよ！でも、朝のおくすりを忘れているかもしれません！");
+    }
+  }
+}
 
 /* ===== 日付 ===== */
 function today() {
@@ -302,6 +329,7 @@ document.addEventListener("visibilitychange", () => {
   if (!document.hidden) {
     dailyReset();
     showPage(current, false);
+    announceStatus();
   }
 });
 
@@ -310,6 +338,7 @@ const hour = new Date().getHours();
 const initialTiming = hour < 15 ? "morning" : "night";
 current = initialTiming;
 showPage(initialTiming, false);
+announceStatus();
 </script>
 
 </body>
