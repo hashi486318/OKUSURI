@@ -187,7 +187,7 @@ function speak(text) {
   const msg = new SpeechSynthesisUtterance(text);
   msg.lang = "ja-JP";
   msg.rate = 0.9;
-  msg.pitch = 1.1;
+  msg.pitch = 1.2;
   msg.volume = 1.0;
 
   speechSynthesis.speak(msg);
@@ -212,18 +212,18 @@ function announceStatus() {
   if (timing === "morning") {
     if (morningRemaining.length > 0) {
       const names = morningRemaining.map(m => m.name).join("、");
-      speak(`おはよう！朝ごはんのあとに${names}を飲むのを忘れないでね。`);
+      speak(`おはよう！朝ごはんのあとに${names}を飲むのを忘れないようにしてね！`);
     } else {
-      speak("朝のおくすりは全部飲みましたよ！");
+      speak("朝のおくすりは全部飲んだよ！");
     }
   } else {
     if (allDone) {
-      speak("今日のおくすりは全部飲みましたよ！");
+      speak("今日のおくすりは全部飲んだよ！");
     } else if (nightRemaining.length > 0) {
       const names = nightRemaining.map(m => m.name).join("、");
       speak(`夜ごはんのあとに${names}を飲むのを忘れないようにしてね！`);
     } else {
-      speak("夜のおくすりは全部飲みましたよ！でも、朝のおくすりを忘れているかもしれません！");
+      speak("夜のおくすりは全部飲んだよ！でも、朝のおくすりを忘れているかもしれないよ！");
     }
   }
 }
