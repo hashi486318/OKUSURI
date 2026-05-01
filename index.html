@@ -178,12 +178,6 @@
 </h2>
 
 <script>
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./sw.js")
-    .then(reg => console.log("SW registered:", reg.scope))
-    .catch(err => console.error("SW failed:", err));
-}
-
 /* ===== 音声 ===== */
 function speak(text) {
   if (!("speechSynthesis" in window)) return;
@@ -193,7 +187,7 @@ function speak(text) {
   const msg = new SpeechSynthesisUtterance(text);
   msg.lang = "ja-JP";
   msg.rate = 0.9;
-  msg.pitch = 1.0;
+  msg.pitch = 1.3;
   msg.volume = 1.0;
 
   speechSynthesis.speak(msg);
