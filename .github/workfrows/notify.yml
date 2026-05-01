@@ -11,10 +11,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Install google-auth-library
+        run: npm install google-auth-library
+
       - name: Send FCM notification
         env:
           FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FCM_TOKEN: ${{ secrets.FCM_TOKEN }}
         run: |
           node -e "
           const { GoogleAuth } = require('google-auth-library');
@@ -29,15 +33,18 @@ jobs:
 
             const token = await auth.getAccessToken();
             const projectId = process.env.FIREBASE_PROJECT_ID;
+            const fcmToken = process.env.FCM_TOKEN;
 
             const hour = new Date().getUTCHours();
             const timing = hour < 12 ? 'morning' : 'night';
-            const title = timing === 'morning' ? '朝のおくすりの時間です' : '夜のおくすりの時間です';
-            const body = timing === 'morning' ? '血圧の薬、ビタミンを飲んでください' : '抗生物質、細胞を飲んでください';
+            const title = '💊 おくすりの時間ですよ〜〜';
+            const body = timing === 'morning'
+              ? '血圧の薬、ビタミンを飲んでください'
+              : '抗生物質、細胞を飲んでください';
 
             const payload = JSON.stringify({
               message: {
-                topic: 'okusuri',
+                token: fcmToken,
                 notification: { title, body },
               }
             });
