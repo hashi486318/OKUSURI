@@ -216,7 +216,7 @@ function announceStatus() {
   if (timing === "morning") {
     if (morningRemaining.length > 0) {
       const names = morningRemaining.map(m => m.name).join("、");
-      speak(`おはようございます。${names}を飲んでください。`);
+      speak(`おはようございます。${names}を飲んでいません。`);
     } else {
       speak("今日の朝のおくすりは全部飲みました。");
     }
@@ -225,7 +225,7 @@ function announceStatus() {
       speak("今日のおくすりは全部飲みました。お疲れ様でした。");
     } else if (nightRemaining.length > 0) {
       const names = nightRemaining.map(m => m.name).join("、");
-      speak(`夜のおくすりの時間です。${names}を飲んでください。`);
+      speak(`夜のおくすりの時間です。${names}を飲んでいません。`);
     } else {
       speak("今日の夜のおくすりは全部飲みました。");
     }
