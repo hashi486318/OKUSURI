@@ -82,6 +82,7 @@
   .check {
     width: 40px;
     height: 40px;
+    min-width: 40px;
     margin-right: 12px;
     border-radius: 50%;
     border: 2px solid #666;
@@ -187,7 +188,7 @@ function speak(text) {
   const msg = new SpeechSynthesisUtterance(text);
   msg.lang = "ja-JP";
   msg.rate = 0.9;
-  msg.pitch = 1.2;
+  msg.pitch = 1.0;
   msg.volume = 1.0;
 
   speechSynthesis.speak(msg);
@@ -195,10 +196,13 @@ function speak(text) {
 
 /* ===== データ ===== */
 const medicines = [
-  { name: "血圧の薬", timing: "morning", order: 1, taken: false },
-  { name: "ビタミン",  timing: "morning", order: 2, taken: false },
-  { name: "抗生物質", timing: "night",   order: 1, taken: false },
-  { name: "細胞",     timing: "night",   order: 2, taken: false }
+  { id: "wasoran_morning",      name: "ワソラン錠",         timing: "morning", order: 1, taken: false },
+  { id: "jumura_morning",       name: "ツムラ潤腸湯",       timing: "morning", order: 2, taken: false },
+  { id: "eldecalcitol_morning", name: "エルデカルシトール", timing: "morning", order: 3, taken: false },
+  { id: "lixiana_morning",      name: "リクシアナ錠",       timing: "morning", order: 4, taken: false },
+  { id: "lanilapis_morning",    name: "ラニラピッド錠",     timing: "morning", order: 5, taken: false },
+  { id: "wasoran_night",        name: "ワソラン錠",         timing: "night",   order: 1, taken: false },
+  { id: "jumura_night",         name: "ツムラ潤腸湯",       timing: "night",   order: 2, taken: false }
 ];
 
 /* ===== 状況読み上げ ===== */
@@ -212,18 +216,18 @@ function announceStatus() {
   if (timing === "morning") {
     if (morningRemaining.length > 0) {
       const names = morningRemaining.map(m => m.name).join("、");
-      speak(`おはよう！朝ごはんのあとに${names}を飲むのを忘れないようにしてね！`);
+      speak(`おはようございます。${names}を飲んでください。`);
     } else {
-      speak("朝のおくすりは全部飲んだよ！");
+      speak("今日の朝のおくすりは全部飲みました。");
     }
   } else {
     if (allDone) {
-      speak("今日のおくすりは全部飲んだよ！");
+      speak("今日のおくすりは全部飲みました。お疲れ様でした。");
     } else if (nightRemaining.length > 0) {
       const names = nightRemaining.map(m => m.name).join("、");
-      speak(`夜ごはんのあとに${names}を飲むのを忘れないようにしてね！`);
+      speak(`夜のおくすりの時間です。${names}を飲んでください。`);
     } else {
-      speak("夜のおくすりは全部飲んだよ！でも、朝のおくすりを忘れているかもしれないよ！");
+      speak("今日の夜のおくすりは全部飲みました。");
     }
   }
 }
@@ -241,7 +245,7 @@ const saved = localStorage.getItem("medicines");
 if (saved) {
   const data = JSON.parse(saved);
   medicines.forEach(m => {
-    const s = data.find(x => x.name === m.name);
+    const s = data.find(x => x.id === m.id);
     if (s) m.taken = s.taken;
   });
 }
@@ -276,7 +280,7 @@ function buildList(timing) {
     .forEach(m => {
       const div = document.createElement("div");
       div.className = "medicine" + (m.taken ? " taken" : "");
-      div.dataset.name = m.name;
+      div.dataset.id = m.id;
       div.innerHTML = `
         <div class="check"></div>
         <div>${m.name}</div>
@@ -295,7 +299,7 @@ function updateList(timing) {
   medicines
     .filter(m => m.timing === timing)
     .forEach(m => {
-      const div = document.querySelector(`.medicine[data-name="${m.name}"]`);
+      const div = document.querySelector(`.medicine[data-id="${m.id}"]`);
       if (div) div.classList.toggle("taken", m.taken);
     });
 }
