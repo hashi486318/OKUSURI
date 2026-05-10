@@ -196,13 +196,13 @@ function speak(text) {
 
 /* ===== データ ===== */
 const medicines = [
-  { id: "jumura_morning",       name: "ツムラ潤腸湯（食前）", timing: "morning", order: 1, taken: false },
-  { id: "wasoran_morning",      name: "ワソラン錠",           timing: "morning", order: 2, taken: false },
-  { id: "eldecalcitol_morning", name: "エルデカルシトール",   timing: "morning", order: 3, taken: false },
-  { id: "lixiana_morning",      name: "リクシアナ錠",         timing: "morning", order: 4, taken: false },
-  { id: "lanilapis_morning",    name: "ラニラピッド錠",       timing: "morning", order: 5, taken: false },
-  { id: "wasoran_night",        name: "ワソラン錠",           timing: "night",   order: 1, taken: false },
-  { id: "jumura_night",         name: "ツムラ潤腸湯（食前）", timing: "night",   order: 2, taken: false }
+  { id: "jumura_morning",       name: "ツムラ潤腸湯（食前）", speech: "ツムラじゅんちょうとう（食前）", timing: "morning", order: 1, taken: false },
+  { id: "wasoran_morning",      name: "ワソラン錠",           speech: "ワソランじょう",                 timing: "morning", order: 2, taken: false },
+  { id: "eldecalcitol_morning", name: "エルデカルシトール",   speech: "エルデカルシトール",             timing: "morning", order: 3, taken: false },
+  { id: "lixiana_morning",      name: "リクシアナ錠",         speech: "リクシアナじょう",               timing: "morning", order: 4, taken: false },
+  { id: "lanilapis_morning",    name: "ラニラピッド錠",       speech: "ラニラピッドじょう",             timing: "morning", order: 5, taken: false },
+  { id: "wasoran_night",        name: "ワソラン錠",           speech: "ワソランじょう",                 timing: "night",   order: 1, taken: false },
+  { id: "jumura_night",         name: "ツムラ潤腸湯（食前）", speech: "ツムラじゅんちょうとう（食前）", timing: "night",   order: 2, taken: false }
 ];
 
 /* ===== 状況読み上げ ===== */
@@ -215,7 +215,7 @@ function announceStatus() {
 
   if (timing === "morning") {
     if (morningRemaining.length > 0) {
-      const names = morningRemaining.map(m => m.name).join("、");
+      const names = morningRemaining.map(m => m.speech).join("、");
       speak(`おはようございます。${names}を飲んでいません。`);
     } else {
       speak("今日の朝のおくすりは全部飲みました。");
@@ -224,7 +224,7 @@ function announceStatus() {
     if (allDone) {
       speak("今日のおくすりは全部飲みました。お疲れ様でした。");
     } else if (nightRemaining.length > 0) {
-      const names = nightRemaining.map(m => m.name).join("、");
+      const names = nightRemaining.map(m => m.speech).join("、");
       speak(`夜のおくすりの時間です。${names}を飲んでいません。`);
     } else {
       speak("今日の夜のおくすりは全部飲みました。");
@@ -288,7 +288,7 @@ function buildList(timing) {
       div.onclick = () => {
         m.taken = !m.taken;
         save();
-        speak(m.taken ? `${m.name}を飲みました` : `${m.name}のチェックを外しました`);
+        speak(m.taken ? `${m.speech}を飲みました` : `${m.speech}のチェックを外しました`);
         updateList(current);
       };
       list.appendChild(div);
